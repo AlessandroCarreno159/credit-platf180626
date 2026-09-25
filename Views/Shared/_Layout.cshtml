@@ -34,8 +34,13 @@
                                 <a class="nav-link text-dark" asp-area="" asp-controller="Solicitudes" asp-action="Create">Nueva solicitud</a>
                             </li>
                         }
-                        @* P5: Panel Analista (/Analista) *@
                         @* P7: Mis notificaciones *@
+                        @if (User.IsInRole("Analista"))
+                        {
+                            <li class="nav-item">
+                                <a class="nav-link text-dark" asp-area="" asp-controller="Analista" asp-action="Index">Panel Analista</a>
+                            </li>
+                        }
                         @{
                             var ultimaJson = HttpAcc.HttpContext?.Session.GetString("UltimaSolicitud");
                             int? ultimaId = null;
