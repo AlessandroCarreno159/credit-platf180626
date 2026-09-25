@@ -1,0 +1,118 @@
+@model List<int>
+@inject Microsoft.Extensions.Configuration.IConfiguration Config
+@{
+    // PieSocket v3: el navegador solo recibe cluster+key publicos; el JWT sale de /api/realtime/token.
+    var pieCluster = Config["PieSocket:ClusterId"];
+    var pieKey = Config["PieSocket:ApiKey"];
+    var pieHabilitado = !string.IsNullOrWhiteSpace(pieCluster) && !string.IsNullOrWhiteSpace(pieKey);
+    var idsJson = System.Text.Json.JsonSerializer.Serialize(Model);
+}
+<div class="d-flex align-items-center gap-2 mb-2">
+    <span id="rt-signalr" class="badge bg-secondary">SignalR: conectando…</span>
+    <span id="rt-pie" class="badge bg-secondary">PieSocket: @(pieHabilitado ? "conectando…" : "no configurado")</span>
+</div>
+<div id="rt-avisos" aria-live="polite"></div>
+
+<script src="https://cdn.jsdelivr.net/npm/@@microsoft/signalr@@10/dist/browser/signalr.min.js"></script>
+@if (pieHabilitado)
+{
+    <script src="https://unpkg.com/piesocket-js@3"></script>
+}
+<script>
+(function () {
+    const ids = @Html.Raw(idsJson);
+    const badgeSignalr = document.getElementById('rt-signalr');
+    const badgePie = document.getElementById('rt-pie');
+    const avisos = document.getElementById('rt-avisos');
+    const set = (el, txt, cls) => { el.textContent = txt; el.className = 'badge ' + cls; };
+
+    const insignia = (nombre) => nombre === 'Aprobado'
+        ? '<span class="badge bg-success">Aprobado</span>'
+        : nombre === 'Rechazado'
+            ? '<span class="badge bg-danger">Rechazado</span>'
+            : '<span class="badge bg-warning text-dark">Pendiente</span>';
+
+    function aviso(texto, tipo) {
+        const d = document.createElement('div');
+        d.className = 'alert alert-' + tipo + ' mt-2';
+        d.textContent = texto;
+        avisos.prepend(d);
+        setTimeout(() => d.remove(), 15000);
+    }
+
+    function pintar(id, estadoNombre, motivo) {
+        const fila = document.querySelector('[data-solicitud-row="' + id + '"]');
+        if (!fila) return false;
+        const celda = fila.querySelector('[data-estado-celda]');
+        if (celda) { celda.innerHTML = insignia(estadoNombre); celda.dataset.estadoValor = estadoNombre; }
+        const motivoCelda = fila.querySelector('[data-motivo-celda]');
+        if (motivoCelda && motivo) motivoCelda.textContent = motivo;
+        return true;
+    }
+
+    async function resincronizar(origen) {
+        for (const id of ids) {
+            try {
+                const r = await fetch('/Solicitudes/EstadoJson?id=' + id, { headers: { 'Accept': 'application/json' } });
+                if (!r.ok) continue;
+                const e = await r.json();
+                const fila = document.querySelector('[data-solicitud-row="' + e.solicitudId + '"]');
+                const actual = fila?.querySelector('[data-estado-celda]')?.dataset.estadoValor;
+                if (actual && actual !== e.estadoNombre) {
+                    pintar(e.solicitudId, e.estadoNombre, e.motivoRechazo);
+                    aviso('Solicitud #' + e.solicitudId + ' actualizada (' + origen + '): ' + e.estadoNombre + '.', 'info');
+                }
+            } catch { /* sin red: se reintentará en la próxima reconexión */ }
+        }
+    }
+
+    function alEvento(e) {
+        if (!e || e.solicitudId === undefined) return;
+        if (pintar(e.solicitudId, e.estadoNombre, e.motivoRechazo)) {
+            let txt = 'Tu solicitud #' + e.solicitudId + ' fue ' + (e.estadoNombre === 'Aprobado' ? 'aprobada' : e.estadoNombre === 'Rechazado' ? 'rechazada' : e.estadoNombre) + '.';
+            if (e.estadoNombre === 'Rechazado' && e.motivoRechazo) txt += ' Motivo: ' + e.motivoRechazo;
+            aviso(txt, e.estadoNombre === 'Aprobado' ? 'success' : 'warning');
+        } else {
+            resincronizar('evento');
+        }
+    }
+
+    // ---- Canal 1: Hub SignalR propio (transporte WebSocket) ----
+    try {
+        const conn = new signalR.HubConnectionBuilder()
+            .withUrl('/hubs/solicitudes', { skipNegotiation: true, transport: signalR.HttpTransportType.WebSockets })
+            .withAutomaticReconnect([0, 2000, 10000, 30000])
+            .build();
+        conn.on('SolicitudEstadoActualizado', alEvento);
+        conn.onreconnected(() => { set(badgeSignalr, 'SignalR: conectado', 'bg-success'); resincronizar('reconexión'); });
+        conn.onreconnecting(() => set(badgeSignalr, 'SignalR: reconectando…', 'bg-warning text-dark'));
+        conn.onclose(() => set(badgeSignalr, 'SignalR: desconectado', 'bg-danger'));
+        conn.start()
+            .then(() => { set(badgeSignalr, 'SignalR: conectado', 'bg-success'); })
+            .catch(() => set(badgeSignalr, 'SignalR: error', 'bg-danger'));
+    } catch { set(badgeSignalr, 'SignalR: no disponible', 'bg-danger'); }
+
+    // ---- Canal 2: PieSocket v3 (room privado propio, JWT del servidor) ----
+    @if (pieHabilitado)
+    {
+        <text>
+        (async () => {
+            try {
+                const ctor = window.PieSocket && (window.PieSocket.default || window.PieSocket);
+                if (typeof ctor !== 'function') { set(badgePie, 'PieSocket: SDK no cargó', 'bg-danger'); return; }
+                const t = await fetch('/api/realtime/token');
+                if (!t.ok) { set(badgePie, 'PieSocket: sin token', 'bg-warning text-dark'); return; }
+                const cfg = await t.json();
+                const ps = new ctor({ clusterId: cfg.clusterId, apiKey: cfg.apiKey, jwt: cfg.jwt, notifySelf: 0 });
+                const canal = await ps.subscribe(cfg.room);
+                canal.listen('SolicitudEstadoActualizado', (data) => alEvento(data));
+                canal.on('open', () => { set(badgePie, 'PieSocket: conectado', 'bg-success'); resincronizar('reconexión'); });
+                canal.on('close', () => set(badgePie, 'PieSocket: desconectado', 'bg-danger'));
+                set(badgePie, 'PieSocket: conectado', 'bg-success');
+            } catch { set(badgePie, 'PieSocket: error', 'bg-danger'); }
+        })();
+        document.addEventListener('visibilitychange', () => { if (!document.hidden) resincronizar('retorno'); });
+        </text>
+    }
+})();
+</script>

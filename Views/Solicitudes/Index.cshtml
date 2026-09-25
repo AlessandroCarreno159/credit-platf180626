@@ -70,11 +70,11 @@ else
             <tbody>
             @foreach (var s in Model.Resultados)
             {
-                <tr>
+                <tr data-solicitud-row="@s.Id">
                     <td>@s.Id</td>
                     <td>@s.MontoSolicitado.ToString("C")</td>
                     <td>@s.FechaSolicitud.ToString("yyyy-MM-dd HH:mm")</td>
-                    <td>
+                    <td data-estado-celda data-estado-valor="@s.Estado">
                         @if (s.Estado == credit_platf.Models.EstadoSolicitud.Pendiente)
                         { <span class="badge bg-warning text-dark">Pendiente</span> }
                         else if (s.Estado == credit_platf.Models.EstadoSolicitud.Aprobado)
@@ -90,4 +90,6 @@ else
             </tbody>
         </table>
     }
+
+    <partial name="_TiempoReal" model="Model.Resultados.Select(s => s.Id).ToList()" />
 }
