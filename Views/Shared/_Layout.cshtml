@@ -35,6 +35,12 @@
                             </li>
                         }
                         @* P7: Mis notificaciones *@
+                        @if (User.Identity?.IsAuthenticated == true)
+                        {
+                            <li class="nav-item">
+                                <a class="nav-link text-dark" asp-area="" asp-controller="Notificaciones" asp-action="Index">Mis notificaciones</a>
+                            </li>
+                        }
                         @if (User.IsInRole("Analista"))
                         {
                             <li class="nav-item">

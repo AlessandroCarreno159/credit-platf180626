@@ -1,0 +1,32 @@
+@model List<credit_platf.Models.Notificacion>
+@{
+    ViewData["Title"] = "Mis notificaciones";
+}
+
+<h1>@ViewData["Title"]</h1>
+<p class="text-muted">Avisos de recepción de tus solicitudes, generados por la cola en la nube (RabbitMQ). No son correos ni SMS.</p>
+
+@if (!Model.Any())
+{
+    <div class="alert alert-secondary">Aún no tienes notificaciones. Registra una solicitud y aparecerá aquí cuando la cola la procese.</div>
+}
+else
+{
+    <table class="table table-striped align-middle">
+        <thead>
+            <tr><th>Solicitud</th><th>Mensaje</th><th>Procesada (UTC)</th></tr>
+        </thead>
+        <tbody>
+        @foreach (var n in Model)
+        {
+            <tr>
+                <td>
+                    <a asp-controller="Solicitudes" asp-action="Details" asp-route-id="@n.SolicitudId">#@n.SolicitudId</a>
+                </td>
+                <td>@n.Texto</td>
+                <td>@n.FechaProcesamientoUtc.ToString("yyyy-MM-dd HH:mm")</td>
+            </tr>
+        }
+        </tbody>
+    </table>
+}
