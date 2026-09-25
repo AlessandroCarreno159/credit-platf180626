@@ -99,7 +99,8 @@ else
 
 @if (User.IsInRole("Analista"))
 {
-    <div class="alert alert-info mt-3">Sesión de <strong>Analista</strong>: el panel de evaluación llega en P5 (<code>/Analista</code>).</div>
+    <div class="alert alert-info mt-3">Sesión de <strong>Analista</strong>: evalúa las solicitudes pendientes en el panel.</div>
+    <a class="btn btn-outline-primary" asp-controller="Analista" asp-action="Index">Ir al panel Analista</a>
 }
 else if (User.Identity?.IsAuthenticated == true)
 {

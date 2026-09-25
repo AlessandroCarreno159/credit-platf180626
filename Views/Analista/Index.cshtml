@@ -1,0 +1,61 @@
+@model List<credit_platf.Controllers.AnalistaFila>
+@{
+    ViewData["Title"] = "Panel Analista";
+}
+
+<h1>@ViewData["Title"] <span class="text-muted fs-5">— solicitudes pendientes</span></h1>
+
+@if (TempData["Exito"] is string exito)
+{
+    <div class="alert alert-success">@exito</div>
+}
+@if (TempData["Error"] is string error)
+{
+    <div class="alert alert-danger">@error</div>
+}
+
+@if (!Model.Any())
+{
+    <div class="alert alert-secondary mt-3">No hay solicitudes pendientes de evaluación.</div>
+}
+else
+{
+    <table class="table table-striped align-middle mt-3">
+        <thead>
+            <tr><th>#</th><th>Cliente</th><th>Monto</th><th>Fecha (UTC)</th><th>Tope 5×</th><th>Motivo rechazo</th><th class="text-end">Acciones</th></tr>
+        </thead>
+        <tbody>
+        @foreach (var f in Model)
+        {
+            var s = f.Solicitud;
+            <tr>
+                <td>@s.Id</td>
+                <td>@(s.Cliente?.Usuario?.Email ?? "(sin usuario)")<br /><small class="text-muted">Ingresos: @((s.Cliente?.IngresosMensuales ?? 0).ToString("C"))</small></td>
+                <td class="fw-bold">@s.MontoSolicitado.ToString("C")</td>
+                <td>@s.FechaSolicitud.ToString("yyyy-MM-dd HH:mm")</td>
+                <td>
+                    <small class="text-muted">@f.TopeAprobacion.ToString("C")</small><br />
+                    @if (f.EsAprobable) { <span class="badge bg-success">Aprobable</span> }
+                    else { <span class="badge bg-danger">Supera 5×</span> }
+                </td>
+                <td>
+                    <form asp-action="Rechazar" method="post" class="d-flex gap-1">
+                        <input type="hidden" name="id" value="@s.Id" />
+                        <input type="text" name="motivo" class="form-control form-control-sm" placeholder="Motivo obligatorio" maxlength="500" />
+                        <button type="submit" class="btn btn-sm btn-outline-danger">Rechazar</button>
+                    </form>
+                </td>
+                <td class="text-end">
+                    <div class="d-flex gap-1 justify-content-end">
+                        <a asp-controller="Solicitudes" asp-action="Details" asp-route-id="@s.Id" class="btn btn-sm btn-outline-secondary">Detalle</a>
+                        <form asp-action="Aprobar" method="post" onsubmit="return confirm('¿Aprobar la solicitud #@s.Id por @s.MontoSolicitado.ToString("C")?');">
+                            <input type="hidden" name="id" value="@s.Id" />
+                            <button type="submit" class="btn btn-sm btn-success">Aprobar</button>
+                        </form>
+                    </div>
+                </td>
+            </tr>
+        }
+        </tbody>
+    </table>
+}
