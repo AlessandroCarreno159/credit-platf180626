@@ -5,6 +5,10 @@
 
 <h1>@ViewData["Title"]</h1>
 
+<div class="mb-3">
+    <a asp-action="Create" class="btn btn-primary">Nueva solicitud</a>
+</div>
+
 @if (!Model.TieneCliente)
 {
     <div class="alert alert-info">

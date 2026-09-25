@@ -8,6 +8,11 @@
 
 <h1>Solicitud <span class="text-muted">#@Model.Id</span></h1>
 
+@if (TempData["Exito"] is string exito)
+{
+    <div class="alert alert-success">@exito</div>
+}
+
 <div class="card mt-3">
     <div class="card-body">
         <dl class="row mb-0">

@@ -1,0 +1,39 @@
+@model credit_platf.Models.SolicitudCreateViewModel
+@{
+    ViewData["Title"] = "Nueva solicitud";
+}
+
+<h1>@ViewData["Title"]</h1>
+
+@if (!Model.PuedeRegistrar)
+{
+    <div asp-validation-summary="ModelOnly" class="text-danger" role="alert"></div>
+    <div class="alert alert-warning">@Model.BloqueoMotivo</div>
+    <a asp-action="Index" class="btn btn-outline-secondary">Volver a mis solicitudes</a>
+}
+else
+{
+    <div class="alert alert-info">
+        Ingresos mensuales: <strong>@Model.IngresosMensuales.ToString("C")</strong> ·
+        Tope de registro (10×): <strong>@Model.TopeRegistro.ToString("C")</strong>.
+        La solicitud se crea en estado <strong>Pendiente</strong>.
+    </div>
+
+    <div class="row">
+        <div class="col-md-4">
+            <form asp-action="Create" method="post">
+                <div asp-validation-summary="ModelOnly" class="text-danger" role="alert"></div>
+                <div class="form-floating mb-3">
+                    <input asp-for="MontoSolicitado" class="form-control" type="number" min="0.01" step="0.01" placeholder="0.00" />
+                    <label asp-for="MontoSolicitado" class="form-label"></label>
+                    <span asp-validation-for="MontoSolicitado" class="text-danger"></span>
+                </div>
+                <button type="submit" class="w-100 btn btn-lg btn-primary">Enviar solicitud</button>
+            </form>
+        </div>
+    </div>
+}
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}
