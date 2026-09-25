@@ -1,3 +1,4 @@
+using System.Text.Json;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
@@ -11,7 +12,7 @@ namespace credit_platf.Controllers;
 // Catalogo de solicitudes del usuario autenticado (P2).
 // El UsuarioId siempre sale del servidor (claims); nunca de la URL ni del form.
 [Authorize]
-public class SolicitudesController(ApplicationDbContext db, UserManager<IdentityUser> users) : Controller
+public class SolicitudesController(ApplicationDbContext db, UserManager<IdentityUser> users, CacheSolicitudes cacheSol) : Controller
 {
     public async Task<IActionResult> Index(SolicitudFiltros filtros)
     {
@@ -32,6 +33,26 @@ public class SolicitudesController(ApplicationDbContext db, UserManager<Identity
         var errores = filtros.Validar().ToList();
         foreach (var e in errores)
             ModelState.AddModelError(string.Empty, e);
+
+        // Cache Redis 60 s (P4): solo con filtros validos.
+        var claveCache = CacheSolicitudes.ClaveListado(userId, filtros);
+        if (errores.Count == 0)
+        {
+            var hit = await cacheSol.LeerAsync(claveCache);
+            if (hit is not null)
+            {
+                vm.Resultados = hit.Select(i => new SolicitudCredito
+                {
+                    Id = i.Id,
+                    ClienteId = cliente.Id,
+                    MontoSolicitado = i.MontoSolicitado,
+                    FechaSolicitud = i.FechaSolicitud,
+                    Estado = i.Estado
+                }).ToList();
+                ViewData["DesdeCache"] = true;
+                return View(vm);
+            }
+        }
 
         // Filtro invalido: no se acepta, se muestra la lista completa sin filtrar.
         var query = db.Solicitudes
@@ -56,6 +77,11 @@ public class SolicitudesController(ApplicationDbContext db, UserManager<Identity
             .OrderByDescending(s => s.FechaSolicitud)
             .ToListAsync();
 
+        if (errores.Count == 0)
+            await cacheSol.GuardarAsync(userId, claveCache,
+                vm.Resultados.Select(SolicitudCacheItem.Desde).ToList());
+        ViewData["DesdeCache"] = false;
+
         return View(vm);
     }
 
@@ -72,6 +98,10 @@ public class SolicitudesController(ApplicationDbContext db, UserManager<Identity
         if (solicitud is null
             || (solicitud.Cliente?.UsuarioId != userId && !User.IsInRole("Analista")))
             return NotFound();
+
+        // P4 sesion (Redis-backed): ultima solicitud visitada para el layout.
+        HttpContext.Session.SetString("UltimaSolicitud",
+            JsonSerializer.Serialize(new { id = solicitud.Id, monto = solicitud.MontoSolicitado }));
 
         return View(solicitud);
     }
@@ -129,6 +159,7 @@ public class SolicitudesController(ApplicationDbContext db, UserManager<Identity
         }
 
         // P4: invalidar cache del listado del usuario.
+        await cacheSol.InvalidarUsuarioAsync(userId);
         // P7: publicar mensaje SolicitudRegistrada (solo si el guardado tuvo exito).
         TempData["Exito"] = $"Solicitud #{solicitud.Id} registrada por {solicitud.MontoSolicitado:C}; está pendiente de evaluación.";
         return RedirectToAction(nameof(Details), new { id = solicitud.Id });

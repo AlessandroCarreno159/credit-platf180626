@@ -49,7 +49,13 @@ else
         </div>
     </form>
 
-    <p class="text-muted">@Model.Resultados.Count solicitud(es).</p>
+    <p class="text-muted">
+        @Model.Resultados.Count solicitud(es).
+        @if (ViewData["DesdeCache"] is true)
+        {
+            <span class="badge bg-info text-dark">desde caché</span>
+        }
+    </p>
 
     @if (!Model.Resultados.Any())
     {
