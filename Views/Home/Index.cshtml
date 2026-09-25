@@ -7,6 +7,10 @@
     <h1 class="display-6">Plataforma de Créditos</h1>
     <p class="lead mb-1">Gestión interna de solicitudes de crédito: registro, evaluación y aprobación.</p>
     <p class="text-muted mb-0">Modelos <code>Cliente</code> y <code>SolicitudCredito</code> con restricciones en EF Core + SQLite. Seed con 2 clientes y 2 solicitudes.</p>
+    @if (User.Identity?.IsAuthenticated == true)
+    {
+        <a class="btn btn-primary mt-3" asp-controller="Solicitudes" asp-action="Index">Ver mis solicitudes</a>
+    }
 </div>
 
 <div class="row mb-4">

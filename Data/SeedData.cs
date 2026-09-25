@@ -10,6 +10,7 @@ public static class SeedData
     public const string EmailAnalista = "analista@platf.test";
     public const string EmailCliente1 = "cliente1@platf.test";
     public const string EmailCliente2 = "cliente2@platf.test";
+    public const string EmailPiloto = "piloto@platf.test";
     public const string PasswordSeed = "Clave123!";
 
     public static async Task InitializeAsync(IServiceProvider services)
@@ -27,6 +28,7 @@ public static class SeedData
 
         var u1 = await EnsureUserAsync(userManager, EmailCliente1);
         var u2 = await EnsureUserAsync(userManager, EmailCliente2);
+        var up = await EnsureUserAsync(userManager, EmailPiloto);
 
         var c1 = await db.Clientes.FirstOrDefaultAsync(c => c.UsuarioId == u1.Id)
             ?? (await AddClienteAsync(db, u1.Id, 2500m));
@@ -53,6 +55,35 @@ public static class SeedData
                 FechaSolicitud = DateTime.UtcNow.AddDays(-2),
                 Estado = EstadoSolicitud.Aprobado
             });
+        }
+
+        // Piloto P2: un cliente con 3 solicitudes en distintos estados, montos y
+        // fechas para evidenciar los filtros (estado, rango de monto, rango de fechas).
+        // Solo una Pendiente (respeta el indice parcial).
+        var cp = await db.Clientes.FirstOrDefaultAsync(c => c.UsuarioId == up.Id)
+            ?? (await AddClienteAsync(db, up.Id, 3000m));
+
+        var ahora = DateTime.UtcNow;
+        var seedPiloto = new[]
+        {
+            new SolicitudCredito { ClienteId = cp.Id, MontoSolicitado = 4000m, FechaSolicitud = ahora, Estado = EstadoSolicitud.Pendiente },
+            new SolicitudCredito { ClienteId = cp.Id, MontoSolicitado = 9000m, FechaSolicitud = ahora.AddDays(-10), Estado = EstadoSolicitud.Aprobado },
+            new SolicitudCredito
+            {
+                ClienteId = cp.Id,
+                MontoSolicitado = 20000m,
+                FechaSolicitud = ahora.AddDays(-20),
+                Estado = EstadoSolicitud.Rechazado,
+                MotivoRechazo = "Monto superior a 5 veces los ingresos."
+            },
+        };
+
+        foreach (var s in seedPiloto)
+        {
+            var existe = await db.Solicitudes.AnyAsync(x =>
+                x.ClienteId == s.ClienteId && x.MontoSolicitado == s.MontoSolicitado && x.Estado == s.Estado);
+            if (!existe)
+                db.Solicitudes.Add(s);
         }
 
         await db.SaveChangesAsync();

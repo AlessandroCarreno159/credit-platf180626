@@ -1,0 +1,83 @@
+@model credit_platf.Models.MisSolicitudesViewModel
+@{
+    ViewData["Title"] = "Mis solicitudes";
+}
+
+<h1>@ViewData["Title"]</h1>
+
+@if (!Model.TieneCliente)
+{
+    <div class="alert alert-info">
+        Aún no tienes un perfil de cliente asociado a tu cuenta, por eso no hay solicitudes que mostrar.
+    </div>
+}
+else
+{
+    <form method="get" class="border rounded p-3 mb-3 bg-light">
+        <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+        <div class="row g-2 align-items-end">
+            <div class="col-md-2">
+                <label asp-for="Filtros.Estado" class="form-label"></label>
+                <select asp-for="Filtros.Estado" class="form-select" asp-items="Html.GetEnumSelectList<credit_platf.Models.EstadoSolicitud>()">
+                    <option value="">Todas</option>
+                </select>
+            </div>
+            <div class="col-md-2">
+                <label asp-for="Filtros.MontoMin" class="form-label"></label>
+                <input asp-for="Filtros.MontoMin" class="form-control" type="number" min="0" step="0.01" />
+            </div>
+            <div class="col-md-2">
+                <label asp-for="Filtros.MontoMax" class="form-label"></label>
+                <input asp-for="Filtros.MontoMax" class="form-control" type="number" min="0" step="0.01" />
+            </div>
+            <div class="col-md-2">
+                <label asp-for="Filtros.Desde" class="form-label"></label>
+                <input asp-for="Filtros.Desde" class="form-control" type="date" />
+            </div>
+            <div class="col-md-2">
+                <label asp-for="Filtros.Hasta" class="form-label"></label>
+                <input asp-for="Filtros.Hasta" class="form-control" type="date" />
+            </div>
+            <div class="col-md-2 d-flex gap-2">
+                <button type="submit" class="btn btn-primary">Filtrar</button>
+                <a asp-action="Index" class="btn btn-outline-secondary">Limpiar</a>
+            </div>
+        </div>
+    </form>
+
+    <p class="text-muted">@Model.Resultados.Count solicitud(es).</p>
+
+    @if (!Model.Resultados.Any())
+    {
+        <div class="alert alert-secondary">No hay solicitudes con esos filtros.</div>
+    }
+    else
+    {
+        <table class="table table-striped align-middle">
+            <thead>
+                <tr><th>#</th><th>Monto</th><th>Fecha (UTC)</th><th>Estado</th><th></th></tr>
+            </thead>
+            <tbody>
+            @foreach (var s in Model.Resultados)
+            {
+                <tr>
+                    <td>@s.Id</td>
+                    <td>@s.MontoSolicitado.ToString("C")</td>
+                    <td>@s.FechaSolicitud.ToString("yyyy-MM-dd HH:mm")</td>
+                    <td>
+                        @if (s.Estado == credit_platf.Models.EstadoSolicitud.Pendiente)
+                        { <span class="badge bg-warning text-dark">Pendiente</span> }
+                        else if (s.Estado == credit_platf.Models.EstadoSolicitud.Aprobado)
+                        { <span class="badge bg-success">Aprobado</span> }
+                        else
+                        { <span class="badge bg-danger">Rechazado</span> }
+                    </td>
+                    <td class="text-end">
+                        <a asp-action="Details" asp-route-id="@s.Id" class="btn btn-sm btn-outline-primary">Detalle</a>
+                    </td>
+                </tr>
+            }
+            </tbody>
+        </table>
+    }
+}
