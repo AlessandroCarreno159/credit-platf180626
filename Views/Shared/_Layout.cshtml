@@ -1,4 +1,6 @@
-﻿<!DOCTYPE html>
+﻿@using System.Text.Json
+@inject Microsoft.AspNetCore.Http.IHttpContextAccessor HttpAcc
+<!DOCTYPE html>
 <html lang="es">
 <head>
     <meta charset="utf-8" />
@@ -34,6 +36,27 @@
                         }
                         @* P5: Panel Analista (/Analista) *@
                         @* P7: Mis notificaciones *@
+                        @{
+                            var ultimaJson = HttpAcc.HttpContext?.Session.GetString("UltimaSolicitud");
+                            int? ultimaId = null;
+                            string? ultimaMonto = null;
+                            if (ultimaJson is not null)
+                            {
+                                try
+                                {
+                                    using var doc = JsonDocument.Parse(ultimaJson);
+                                    ultimaId = doc.RootElement.GetProperty("id").GetInt32();
+                                    ultimaMonto = doc.RootElement.GetProperty("monto").GetDecimal().ToString("C");
+                                }
+                                catch (JsonException) { }
+                            }
+                            if (ultimaId.HasValue)
+                            {
+                                <li class="nav-item">
+                                    <a class="nav-link text-dark" asp-area="" asp-controller="Solicitudes" asp-action="Details" asp-route-id="@ultimaId">Ver última solicitud @ultimaMonto</a>
+                                </li>
+                            }
+                        }
                         <li class="nav-item">
                             <a class="nav-link text-dark" asp-area="" asp-controller="Home" asp-action="Privacy">Privacidad</a>
                         </li>

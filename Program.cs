@@ -17,6 +17,25 @@ builder.Services.AddDefaultIdentity<IdentityUser>(options => options.SignIn.Requ
     .AddEntityFrameworkStores<ApplicationDbContext>();
 builder.Services.AddControllersWithViews();
 
+// Redis (P4, obligatorio, sin fallback): sesion + cache distribuida.
+var redisConn = builder.Configuration["Redis:ConnectionString"];
+if (string.IsNullOrWhiteSpace(redisConn))
+    throw new InvalidOperationException(
+        "Falta Redis:ConnectionString. Configúrala con user-secrets (local) o variable de entorno Redis__ConnectionString.");
+builder.Services.AddStackExchangeRedisCache(o =>
+{
+    o.Configuration = redisConn;
+    o.InstanceName = builder.Configuration["Redis:InstanceName"] ?? "creditplatf:";
+});
+builder.Services.AddHttpContextAccessor();
+builder.Services.AddSession(o =>
+{
+    o.IdleTimeout = TimeSpan.FromMinutes(20);
+    o.Cookie.HttpOnly = true;
+    o.Cookie.IsEssential = true;
+});
+builder.Services.AddScoped<CacheSolicitudes>();
+
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.
@@ -35,6 +54,7 @@ app.UseHttpsRedirection();
 app.UseRouting();
 
 app.UseAuthentication();
+app.UseSession();
 app.UseAuthorization();
 
 app.MapStaticAssets();
