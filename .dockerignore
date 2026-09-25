@@ -1,0 +1,15 @@
+bin/
+obj/
+out/
+publish/
+.git/
+.vs/
+.ionide/
+*.db
+*.db-shm
+*.db-wal
+*.sqlite
+*.sqlite-shm
+*.sqlite-wal
+*.user
+*.suo

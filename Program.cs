@@ -1,3 +1,4 @@
+using Microsoft.AspNetCore.HttpOverrides;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using credit_platf.Data;
@@ -46,6 +47,16 @@ builder.Services.AddHostedService<SolicitudNotificacionConsumer>();
 
 var app = builder.Build();
 
+// P8: tras el proxy TLS de Render, sin esto UseHttpsRedirection entra en loop.
+// Render no publica lista de IPs: se acepta cualquier proxy (1 sola instancia propia).
+var forwarded = new ForwardedHeadersOptions
+{
+    ForwardedHeaders = ForwardedHeaders.XForwardedFor | ForwardedHeaders.XForwardedProto
+};
+forwarded.KnownNetworks.Clear();
+forwarded.KnownProxies.Clear();
+app.UseForwardedHeaders(forwarded);
+
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
 {
@@ -74,13 +85,21 @@ app.MapControllerRoute(
 
 app.MapHub<SolicitudesHub>("/hubs/solicitudes");
 
+// P8: health check de Render.
+app.MapGet("/health", () => Results.Ok("ok"));
+
 app.MapRazorPages()
    .WithStaticAssets();
 
-// Seed P1: ejecuta con SEED=true o --seed. Idempotente.
-if (builder.Configuration.GetValue<bool>("SEED") || args.Contains("--seed"))
+// P8: en Render (Free, SQLite efimero) migra + seed idempotente en cada arranque.
+// En local se usa igual con APLICAR_MIGRACIONES=true o el flag clasico SEED/--seed.
+if (builder.Configuration.GetValue<bool>("APLICAR_MIGRACIONES")
+    || builder.Configuration.GetValue<bool>("SEED")
+    || args.Contains("--seed"))
 {
     using var scope = app.Services.CreateScope();
+    var db = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
+    await db.Database.MigrateAsync();
     await SeedData.InitializeAsync(scope.ServiceProvider);
 }
 
