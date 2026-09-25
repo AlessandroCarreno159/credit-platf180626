@@ -1,1 +1,25 @@
-instrucciones-gitignore.md
+## Build outputs
+bin/
+obj/
+out/
+publish/
+
+## SQLite dev database (local only, P8 usa /var/data en Render)
+*.db
+*.db-shm
+*.db-wal
+*.sqlite
+*.sqlite-shm
+*.sqlite-wal
+
+## User-specific / secrets
+appsettings.Development.json
+secrets.json
+*.user
+*.suo
+.vs/
+.ionide/
+
+## OS
+.DS_Store
+Thumbs.db
