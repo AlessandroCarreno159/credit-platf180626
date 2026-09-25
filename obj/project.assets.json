@@ -5905,11 +5905,11 @@
   "project": {
     "version": "1.0.0",
     "restore": {
-      "projectUniqueName": "D:\\Universidad\\SEMESTRE 6\\PROGRAMACIÓN I\\Practica1809\\credit-platf\\credit-platf.csproj",
+      "projectUniqueName": "d:\\Universidad\\SEMESTRE 6\\PROGRAMACIÓN I\\Practica1809\\credit-platf\\credit-platf.csproj",
       "projectName": "credit-platf",
-      "projectPath": "D:\\Universidad\\SEMESTRE 6\\PROGRAMACIÓN I\\Practica1809\\credit-platf\\credit-platf.csproj",
+      "projectPath": "d:\\Universidad\\SEMESTRE 6\\PROGRAMACIÓN I\\Practica1809\\credit-platf\\credit-platf.csproj",
       "packagesPath": "C:\\Users\\Usuario\\.nuget\\packages\\",
-      "outputPath": "D:\\Universidad\\SEMESTRE 6\\PROGRAMACIÓN I\\Practica1809\\credit-platf\\obj\\",
+      "outputPath": "d:\\Universidad\\SEMESTRE 6\\PROGRAMACIÓN I\\Practica1809\\credit-platf\\obj\\",
       "projectStyle": "PackageReference",
       "configFilePaths": [
         "C:\\Users\\Usuario\\AppData\\Roaming\\NuGet\\NuGet.Config"
@@ -6416,7 +6416,7 @@
       "code": "NU1901",
       "level": "Warning",
       "warningLevel": 1,
-      "message": "El paquete \"NuGet.Packaging\" 6.12.1 tiene una vulnerabilidad de gravedad baja conocida, https://github.com/advisories/GHSA-g4vj-cjjj-v7hg",
+      "message": "Package 'NuGet.Packaging' 6.12.1 has a known low severity vulnerability, https://github.com/advisories/GHSA-g4vj-cjjj-v7hg",
       "libraryId": "NuGet.Packaging",
       "targetGraphs": [
         "net10.0"
@@ -6426,7 +6426,7 @@
       "code": "NU1901",
       "level": "Warning",
       "warningLevel": 1,
-      "message": "El paquete \"NuGet.Protocol\" 6.12.1 tiene una vulnerabilidad de gravedad baja conocida, https://github.com/advisories/GHSA-g4vj-cjjj-v7hg",
+      "message": "Package 'NuGet.Protocol' 6.12.1 has a known low severity vulnerability, https://github.com/advisories/GHSA-g4vj-cjjj-v7hg",
       "libraryId": "NuGet.Protocol",
       "targetGraphs": [
         "net10.0"
@@ -6436,7 +6436,7 @@
       "code": "NU1903",
       "level": "Warning",
       "warningLevel": 1,
-      "message": "El paquete \"SQLitePCLRaw.lib.e_sqlite3\" 2.1.11 tiene una vulnerabilidad de gravedad alta conocida, https://github.com/advisories/GHSA-2m69-gcr7-jv3q",
+      "message": "Package 'SQLitePCLRaw.lib.e_sqlite3' 2.1.11 has a known high severity vulnerability, https://github.com/advisories/GHSA-2m69-gcr7-jv3q",
       "libraryId": "SQLitePCLRaw.lib.e_sqlite3",
       "targetGraphs": [
         "net10.0"

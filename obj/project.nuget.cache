@@ -1,8 +1,8 @@
 {
   "version": 2,
-  "dgSpecHash": "66nF7J1p3Pk=",
+  "dgSpecHash": "CxZjotue72U=",
   "success": true,
-  "projectFilePath": "D:\\Universidad\\SEMESTRE 6\\PROGRAMACIÓN I\\Practica1809\\credit-platf\\credit-platf.csproj",
+  "projectFilePath": "d:\\Universidad\\SEMESTRE 6\\PROGRAMACIÓN I\\Practica1809\\credit-platf\\credit-platf.csproj",
   "expectedPackageFiles": [
     "C:\\Users\\Usuario\\.nuget\\packages\\humanizer\\2.14.1\\humanizer.2.14.1.nupkg.sha512",
     "C:\\Users\\Usuario\\.nuget\\packages\\humanizer.core\\2.14.1\\humanizer.core.2.14.1.nupkg.sha512",
@@ -125,10 +125,10 @@
     {
       "code": "NU1901",
       "level": "Warning",
-      "message": "El paquete \"NuGet.Packaging\" 6.12.1 tiene una vulnerabilidad de gravedad baja conocida, https://github.com/advisories/GHSA-g4vj-cjjj-v7hg",
-      "projectPath": "D:\\Universidad\\SEMESTRE 6\\PROGRAMACIÓN I\\Practica1809\\credit-platf\\credit-platf.csproj",
+      "message": "Package 'NuGet.Packaging' 6.12.1 has a known low severity vulnerability, https://github.com/advisories/GHSA-g4vj-cjjj-v7hg",
+      "projectPath": "d:\\Universidad\\SEMESTRE 6\\PROGRAMACIÓN I\\Practica1809\\credit-platf\\credit-platf.csproj",
       "warningLevel": 1,
-      "filePath": "D:\\Universidad\\SEMESTRE 6\\PROGRAMACIÓN I\\Practica1809\\credit-platf\\credit-platf.csproj",
+      "filePath": "d:\\Universidad\\SEMESTRE 6\\PROGRAMACIÓN I\\Practica1809\\credit-platf\\credit-platf.csproj",
       "libraryId": "NuGet.Packaging",
       "targetGraphs": [
         "net10.0"
@@ -137,10 +137,10 @@
     {
       "code": "NU1901",
       "level": "Warning",
-      "message": "El paquete \"NuGet.Protocol\" 6.12.1 tiene una vulnerabilidad de gravedad baja conocida, https://github.com/advisories/GHSA-g4vj-cjjj-v7hg",
-      "projectPath": "D:\\Universidad\\SEMESTRE 6\\PROGRAMACIÓN I\\Practica1809\\credit-platf\\credit-platf.csproj",
+      "message": "Package 'NuGet.Protocol' 6.12.1 has a known low severity vulnerability, https://github.com/advisories/GHSA-g4vj-cjjj-v7hg",
+      "projectPath": "d:\\Universidad\\SEMESTRE 6\\PROGRAMACIÓN I\\Practica1809\\credit-platf\\credit-platf.csproj",
       "warningLevel": 1,
-      "filePath": "D:\\Universidad\\SEMESTRE 6\\PROGRAMACIÓN I\\Practica1809\\credit-platf\\credit-platf.csproj",
+      "filePath": "d:\\Universidad\\SEMESTRE 6\\PROGRAMACIÓN I\\Practica1809\\credit-platf\\credit-platf.csproj",
       "libraryId": "NuGet.Protocol",
       "targetGraphs": [
         "net10.0"
@@ -149,10 +149,10 @@
     {
       "code": "NU1903",
       "level": "Warning",
-      "message": "El paquete \"SQLitePCLRaw.lib.e_sqlite3\" 2.1.11 tiene una vulnerabilidad de gravedad alta conocida, https://github.com/advisories/GHSA-2m69-gcr7-jv3q",
-      "projectPath": "D:\\Universidad\\SEMESTRE 6\\PROGRAMACIÓN I\\Practica1809\\credit-platf\\credit-platf.csproj",
+      "message": "Package 'SQLitePCLRaw.lib.e_sqlite3' 2.1.11 has a known high severity vulnerability, https://github.com/advisories/GHSA-2m69-gcr7-jv3q",
+      "projectPath": "d:\\Universidad\\SEMESTRE 6\\PROGRAMACIÓN I\\Practica1809\\credit-platf\\credit-platf.csproj",
       "warningLevel": 1,
-      "filePath": "D:\\Universidad\\SEMESTRE 6\\PROGRAMACIÓN I\\Practica1809\\credit-platf\\credit-platf.csproj",
+      "filePath": "d:\\Universidad\\SEMESTRE 6\\PROGRAMACIÓN I\\Practica1809\\credit-platf\\credit-platf.csproj",
       "libraryId": "SQLitePCLRaw.lib.e_sqlite3",
       "targetGraphs": [
         "net10.0"

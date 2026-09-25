@@ -1,17 +1,17 @@
 {
   "format": 1,
   "restore": {
-    "D:\\Universidad\\SEMESTRE 6\\PROGRAMACIÓN I\\Practica1809\\credit-platf\\credit-platf.csproj": {}
+    "d:\\Universidad\\SEMESTRE 6\\PROGRAMACIÓN I\\Practica1809\\credit-platf\\credit-platf.csproj": {}
   },
   "projects": {
-    "D:\\Universidad\\SEMESTRE 6\\PROGRAMACIÓN I\\Practica1809\\credit-platf\\credit-platf.csproj": {
+    "d:\\Universidad\\SEMESTRE 6\\PROGRAMACIÓN I\\Practica1809\\credit-platf\\credit-platf.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "D:\\Universidad\\SEMESTRE 6\\PROGRAMACIÓN I\\Practica1809\\credit-platf\\credit-platf.csproj",
+        "projectUniqueName": "d:\\Universidad\\SEMESTRE 6\\PROGRAMACIÓN I\\Practica1809\\credit-platf\\credit-platf.csproj",
         "projectName": "credit-platf",
-        "projectPath": "D:\\Universidad\\SEMESTRE 6\\PROGRAMACIÓN I\\Practica1809\\credit-platf\\credit-platf.csproj",
+        "projectPath": "d:\\Universidad\\SEMESTRE 6\\PROGRAMACIÓN I\\Practica1809\\credit-platf\\credit-platf.csproj",
         "packagesPath": "C:\\Users\\Usuario\\.nuget\\packages\\",
-        "outputPath": "D:\\Universidad\\SEMESTRE 6\\PROGRAMACIÓN I\\Practica1809\\credit-platf\\obj\\",
+        "outputPath": "d:\\Universidad\\SEMESTRE 6\\PROGRAMACIÓN I\\Practica1809\\credit-platf\\obj\\",
         "projectStyle": "PackageReference",
         "configFilePaths": [
           "C:\\Users\\Usuario\\AppData\\Roaming\\NuGet\\NuGet.Config"
