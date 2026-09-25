@@ -40,6 +40,10 @@ builder.Services.AddScoped<CacheSolicitudes>();
 builder.Services.AddHttpClient("piesocket");
 builder.Services.AddScoped<PieSocketPublisher>();
 
+// RabbitMQ CloudAMQP (P7): productor singleton + consumidor (el flag vive dentro del servicio).
+builder.Services.AddSingleton<RabbitMqPublisher>();
+builder.Services.AddHostedService<SolicitudNotificacionConsumer>();
+
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.

@@ -12,7 +12,11 @@ namespace credit_platf.Controllers;
 // Catalogo de solicitudes del usuario autenticado (P2).
 // El UsuarioId siempre sale del servidor (claims); nunca de la URL ni del form.
 [Authorize]
-public class SolicitudesController(ApplicationDbContext db, UserManager<IdentityUser> users, CacheSolicitudes cacheSol) : Controller
+public class SolicitudesController(
+    ApplicationDbContext db,
+    UserManager<IdentityUser> users,
+    CacheSolicitudes cacheSol,
+    RabbitMqPublisher mq) : Controller
 {
     public async Task<IActionResult> Index(SolicitudFiltros filtros)
     {
@@ -181,7 +185,10 @@ public class SolicitudesController(ApplicationDbContext db, UserManager<Identity
 
         // P4: invalidar cache del listado del usuario.
         await cacheSol.InvalidarUsuarioAsync(userId);
-        // P7: publicar mensaje SolicitudRegistrada (solo si el guardado tuvo exito).
+        // P7: publicar SolicitudRegistrada SOLO tras guardar. Si falla, la solicitud queda.
+        var (mqOk, _) = await mq.PublicarSolicitudRegistradaAsync(solicitud.Id, userId);
+        if (!mqOk)
+            TempData["MqAviso"] = "Tu solicitud se guardó, pero la notificación no pudo encolarse. Un analista la verá igual en el panel; el reenvío se hace con el mismo MessageId (ver README).";
         TempData["Exito"] = $"Solicitud #{solicitud.Id} registrada por {solicitud.MontoSolicitado:C}; está pendiente de evaluación.";
         return RedirectToAction(nameof(Details), new { id = solicitud.Id });
     }

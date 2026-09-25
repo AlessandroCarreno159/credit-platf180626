@@ -12,6 +12,10 @@
 {
     <div class="alert alert-success">@exito</div>
 }
+@if (TempData["MqAviso"] is string mqAviso)
+{
+    <div class="alert alert-warning">@mqAviso</div>
+}
 
 <div class="card mt-3" data-solicitud-row="@Model.Id">
     <div class="card-body">
