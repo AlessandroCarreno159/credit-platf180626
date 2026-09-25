@@ -1,8 +1,110 @@
-﻿@{
-    ViewData["Title"] = "Home Page";
+﻿@model credit_platf.Models.HomeIndexViewModel
+@{
+    ViewData["Title"] = "Plataforma de Créditos";
 }
 
-<div class="text-center">
-    <h1 class="display-4">Welcome</h1>
-    <p>Learn about <a href="https://learn.microsoft.com/aspnet/core">building Web apps with ASP.NET Core</a>.</p>
+<div class="p-4 mb-4 bg-light rounded-3 border">
+    <h1 class="display-6">Plataforma de Créditos</h1>
+    <p class="lead mb-1">Gestión interna de solicitudes de crédito: registro, evaluación y aprobación.</p>
+    <p class="text-muted mb-0">Modelos <code>Cliente</code> y <code>SolicitudCredito</code> con restricciones en EF Core + SQLite. Seed con 2 clientes y 2 solicitudes.</p>
 </div>
+
+<div class="row mb-4">
+    <div class="col-md-3">
+        <div class="card text-center"><div class="card-body">
+            <h2>@Model.TotalClientes</h2><p class="text-muted mb-0">Clientes</p>
+        </div></div>
+    </div>
+    <div class="col-md-3">
+        <div class="card text-center"><div class="card-body">
+            <h2 class="text-warning">@Model.TotalPendientes</h2><p class="text-muted mb-0">Pendientes</p>
+        </div></div>
+    </div>
+    <div class="col-md-3">
+        <div class="card text-center"><div class="card-body">
+            <h2 class="text-success">@Model.TotalAprobadas</h2><p class="text-muted mb-0">Aprobadas</p>
+        </div></div>
+    </div>
+    <div class="col-md-3">
+        <div class="card text-center"><div class="card-body">
+            <h2 class="text-danger">@Model.TotalRechazadas</h2><p class="text-muted mb-0">Rechazadas</p>
+        </div></div>
+    </div>
+</div>
+
+<h2>Últimas solicitudes</h2>
+@if (!Model.Ultimas.Any())
+{
+    <div class="alert alert-info">Aún no hay solicitudes registradas.</div>
+}
+else
+{
+    <table class="table table-striped align-middle">
+        <thead>
+            <tr>
+                <th>#</th><th>Cliente</th><th>Monto</th><th>Fecha (UTC)</th><th>Estado</th><th>Tope 5x / ¿Aprobable?</th>
+            </tr>
+        </thead>
+        <tbody>
+        @foreach (var s in Model.Ultimas)
+        {
+            <tr>
+                <td>@s.Id</td>
+                <td>@s.ClienteEmail<br /><small class="text-muted">Ingresos: @s.IngresosMensuales.ToString("C")</small></td>
+                <td>@s.MontoSolicitado.ToString("C")</td>
+                <td>@s.FechaSolicitud.ToString("yyyy-MM-dd HH:mm")</td>
+                <td>
+                    @if (s.Estado == credit_platf.Models.EstadoSolicitud.Pendiente)
+                    { <span class="badge bg-warning text-dark">Pendiente</span> }
+                    else if (s.Estado == credit_platf.Models.EstadoSolicitud.Aprobado)
+                    { <span class="badge bg-success">Aprobado</span> }
+                    else
+                    { <span class="badge bg-danger">Rechazado</span>
+                      @if (!string.IsNullOrEmpty(s.MotivoRechazo)) { <br /><small>@s.MotivoRechazo</small> } }
+                </td>
+                <td>
+                    <small class="text-muted">Máx: @s.TopeAprobacion.ToString("C")</small><br />
+                    @if (s.EsAprobable) { <span class="badge bg-success">Aprobable</span> }
+                    else { <span class="badge bg-danger">No aprobable (&gt;5x)</span> }
+                </td>
+            </tr>
+        }
+        </tbody>
+    </table>
+}
+
+<div class="accordion mt-4" id="reglasP1">
+    <div class="accordion-item">
+        <h2 class="accordion-header">
+            <button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#reglasBody">
+                Reglas de negocio (P1)
+            </button>
+        </h2>
+        <div id="reglasBody" class="accordion-collapse collapse show">
+            <div class="accordion-body">
+                <ul class="mb-0">
+                    <li><strong>IngresosMensuales &gt; 0</strong> y <strong>MontoSolicitado &gt; 0</strong> (DataAnnotations + CHECK en SQLite).</li>
+                    <li><strong>Un cliente = una solicitud Pendiente</strong> (índice único parcial <code>WHERE Estado = 0</code> + validación en servidor desde P3).</li>
+                    <li><strong>No aprobar si Monto &gt; 5 × Ingresos</strong> (clase <code>SolicitudReglas.EsAprobable</code>; se enforce en el panel Analista P5). Ej.: ingresos 2.500 → tope 12.500.</li>
+                    <li><strong>Tope de registro 10 × Ingresos</strong> (adelanto P3, ya calculado en <code>SolicitudReglas.ValidarRegistro</code>).</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</div>
+
+@if (User.IsInRole("Analista"))
+{
+    <div class="alert alert-info mt-3">Sesión de <strong>Analista</strong>: el panel de evaluación llega en P5 (<code>/Analista</code>).</div>
+}
+else if (User.Identity?.IsAuthenticated == true)
+{
+    <div class="alert alert-secondary mt-3">Sesión de cliente: “Mis solicitudes” y el registro llegan en P2/P3.</div>
+}
+else if (System.Diagnostics.Debugger.IsAttached || Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT") == "Development")
+{
+    <div class="alert alert-light border mt-3">
+        Seed P1 (solo Development): <code>analista@platf.test</code> / <code>Clave123!</code> ·
+        <code>cliente1@platf.test</code> / <code>Clave123!</code> · <code>cliente2@platf.test</code> / <code>Clave123!</code>
+    </div>
+}
