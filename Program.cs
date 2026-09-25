@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using credit_platf.Data;
+using credit_platf.Hubs;
 using credit_platf.Services;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -16,6 +17,7 @@ builder.Services.AddDefaultIdentity<IdentityUser>(options => options.SignIn.Requ
     .AddErrorDescriber<DescripcionErroresIdentity>()
     .AddEntityFrameworkStores<ApplicationDbContext>();
 builder.Services.AddControllersWithViews();
+builder.Services.AddSignalR();
 
 // Redis (P4, obligatorio, sin fallback): sesion + cache distribuida.
 var redisConn = builder.Configuration["Redis:ConnectionString"];
@@ -35,6 +37,8 @@ builder.Services.AddSession(o =>
     o.Cookie.IsEssential = true;
 });
 builder.Services.AddScoped<CacheSolicitudes>();
+builder.Services.AddHttpClient("piesocket");
+builder.Services.AddScoped<PieSocketPublisher>();
 
 var app = builder.Build();
 
@@ -63,6 +67,8 @@ app.MapControllerRoute(
     name: "default",
     pattern: "{controller=Home}/{action=Index}/{id?}")
     .WithStaticAssets();
+
+app.MapHub<SolicitudesHub>("/hubs/solicitudes");
 
 app.MapRazorPages()
    .WithStaticAssets();

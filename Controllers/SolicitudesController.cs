@@ -106,6 +106,27 @@ public class SolicitudesController(ApplicationDbContext db, UserManager<Identity
         return View(solicitud);
     }
 
+    // Estado vigente para re-sync tras reconexion (P6). Mismo control de acceso que Details.
+    [HttpGet]
+    public async Task<IActionResult> EstadoJson(int id)
+    {
+        var userId = users.GetUserId(User)!;
+        var solicitud = await db.Solicitudes
+            .FirstOrDefaultAsync(s => s.Id == id);
+        if (solicitud is null)
+            return NotFound();
+        var cliente = await db.Clientes.FindAsync(solicitud.ClienteId);
+        if (cliente?.UsuarioId != userId && !User.IsInRole("Analista"))
+            return NotFound();
+        return Json(new
+        {
+            solicitudId = solicitud.Id,
+            estado = (int)solicitud.Estado,
+            estadoNombre = solicitud.Estado.ToString(),
+            motivoRechazo = solicitud.MotivoRechazo
+        });
+    }
+
     // Registro de solicitud (P3). Crea siempre en estado Pendiente.
     public async Task<IActionResult> Create()
     {

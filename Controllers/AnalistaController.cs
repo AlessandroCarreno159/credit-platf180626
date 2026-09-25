@@ -1,7 +1,9 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.SignalR;
 using Microsoft.EntityFrameworkCore;
 using credit_platf.Data;
+using credit_platf.Hubs;
 using credit_platf.Models;
 using credit_platf.Services;
 
@@ -9,7 +11,11 @@ namespace credit_platf.Controllers;
 
 // Panel de evaluacion de riesgo (P5). Solo rol Analista (el rol se crea en el seed P1).
 [Authorize(Roles = "Analista")]
-public class AnalistaController(ApplicationDbContext db, CacheSolicitudes cacheSol) : Controller
+public class AnalistaController(
+    ApplicationDbContext db,
+    CacheSolicitudes cacheSol,
+    IHubContext<SolicitudesHub> hub,
+    PieSocketPublisher pie) : Controller
 {
     [Route("/Analista")]
     [Route("/Analista/Index")]
@@ -56,7 +62,7 @@ public class AnalistaController(ApplicationDbContext db, CacheSolicitudes cacheS
         solicitud.Estado = EstadoSolicitud.Aprobado;
         await db.SaveChangesAsync();
         await cacheSol.InvalidarUsuarioAsync(solicitud.Cliente!.UsuarioId);
-        // P6: emitir evento SolicitudEstadoActualizado al propietario.
+        await NotificarCambioAsync(solicitud);
         TempData["Exito"] = $"Solicitud #{solicitud.Id} aprobada.";
         return RedirectToAction(nameof(Index));
     }
@@ -86,9 +92,29 @@ public class AnalistaController(ApplicationDbContext db, CacheSolicitudes cacheS
         solicitud.MotivoRechazo = motivo.Trim();
         await db.SaveChangesAsync();
         await cacheSol.InvalidarUsuarioAsync(solicitud.Cliente!.UsuarioId);
-        // P6: emitir evento SolicitudEstadoActualizado al propietario.
+        await NotificarCambioAsync(solicitud);
         TempData["Exito"] = $"Solicitud #{solicitud.Id} rechazada.";
         return RedirectToAction(nameof(Index));
+    }
+
+    // P6: DB primero, Redis despues, evento al final. Destinatario desde el servidor.
+    // PieSocket no revierte nada si falla (log interno en el publisher).
+    private async Task NotificarCambioAsync(SolicitudCredito solicitud)
+    {
+        var evento = new
+        {
+            @event = "SolicitudEstadoActualizado",
+            data = new
+            {
+                solicitudId = solicitud.Id,
+                estado = (int)solicitud.Estado,
+                estadoNombre = solicitud.Estado.ToString(),
+                motivoRechazo = solicitud.MotivoRechazo
+            }
+        };
+        var usuarioId = solicitud.Cliente!.UsuarioId;
+        await hub.Clients.User(usuarioId).SendAsync("SolicitudEstadoActualizado", evento.data);
+        await pie.PublicarAsync(PieSocketPublisher.RoomDe(usuarioId), evento);
     }
 }
 
